@@ -10,6 +10,7 @@ var User = require('./app/models/user');
 var Links = require('./app/collections/links');
 var Link = require('./app/models/link');
 var Click = require('./app/models/click');
+var session = require('express-session');
 
 var app = express();
 
@@ -21,26 +22,48 @@ app.use(bodyParser.json());
 // Parse forms (signup/login)
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
+app.use(session({
+  secret: 'secret',
+  resave: false,
+  saveUninitialized: true,
+}));
 
 
-app.get('/', 
+// app.get
+//   check for login
+//   if not logged in,
+//      redirect to /login
+
+app.get('/',
 function(req, res) {
-  res.render('index');
+  if(!req.session.authenticated) {
+    res.redirect('/login');
+  } else {
+    res.render('index');
+  }
 });
 
-app.get('/create', 
+app.get('/create',
 function(req, res) {
-  res.render('index');
+  if(!req.session.authenticated) {
+    res.redirect('/login');
+  } else {
+    res.render('create');
+  }
 });
 
-app.get('/links', 
+app.get('/links',
 function(req, res) {
-  Links.reset().fetch().then(function(links) {
-    res.status(200).send(links.models);
-  });
+  if(!req.session.authenticated) {
+    res.redirect('/login');
+  } else {
+    Links.reset().fetch().then(function(links) {
+      res.status(200).send(links.models);
+    });
+  }
 });
 
-app.post('/links', 
+app.post('/links',
 function(req, res) {
   var uri = req.body.url;
 
@@ -75,7 +98,44 @@ function(req, res) {
 /************************************************************/
 // Write your authentication routes here
 /************************************************************/
+app.get('/login',
+function(req, res) {
+  res.render('login');
+});
+// routes with endpoints /login, /signup
 
+app.post('/signup', function(req, res) {
+// create temporary model
+// use fetch to check server
+// then
+// if exists, send 'already here'
+// else
+//  add model to server using save
+  new User({
+    username: req.body.username
+  }).fetch()
+
+
+
+  .then(function(user){
+    if (user) {
+      res.send(201, 'User already exists');
+    } else {
+      var user = new User({
+        username: req.body.username,
+        password: req.body.password // need to hash this in some way
+      });
+
+      user.save()
+
+      .then(function(user){
+        Users.add(user);
+        res.status(201).redirect('/');
+      });
+    }
+  })
+
+})
 
 
 /************************************************************/

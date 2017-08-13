@@ -5,6 +5,14 @@ var Promise = require('bluebird');
 
 
 var User = db.Model.extend({
+  tableName: 'users',
+
+  initialize: function() {
+    this.on('createModel', function(model, attrs, options) {
+      // console.log(model);
+
+    })
+  }
 });
 
 module.exports = User;
