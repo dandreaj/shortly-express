@@ -8,11 +8,19 @@ var User = db.Model.extend({
   tableName: 'users',
 
   initialize: function() {
-    this.on('createModel', function(model, attrs, options) {
-      // console.log(model);
-
-    })
+    this.on('creating', function(model, attrs, options) {
+      bcrypt.hash(model.attributes.password, null, null, function(err, hash) {
+        if(err) {
+          console.log(err);
+        } else {
+          console.log('hash: ', hash);
+          model.set('password', hash);
+        }
+      });
+    });
   }
 });
+
+
 
 module.exports = User;

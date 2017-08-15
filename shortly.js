@@ -1,3 +1,4 @@
+
 var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
@@ -11,6 +12,7 @@ var Links = require('./app/collections/links');
 var Link = require('./app/models/link');
 var Click = require('./app/models/click');
 var session = require('express-session');
+var bcrypt = require('bcrypt-nodejs');
 
 var app = express();
 
@@ -102,8 +104,27 @@ app.get('/login',
 function(req, res) {
   res.render('login');
 });
-// routes with endpoints /login, /signup
 
+app.post('/login', function(req, res) {
+  new User({
+    username: req.body.username,
+    password: req.body.password
+  }).fetch()
+
+
+
+  .then(function(user){
+    if (user) {
+      res.status(201).redirect('/');
+    } else {
+      res.status(201).redirect('/login');
+    }
+  });
+});
+
+app.get('/signup', function(req,res){
+  res.render('signup');
+})
 app.post('/signup', function(req, res) {
 // create temporary model
 // use fetch to check server
@@ -119,7 +140,7 @@ app.post('/signup', function(req, res) {
 
   .then(function(user){
     if (user) {
-      res.send(201, 'User already exists');
+      res.status(201).redirect('/');
     } else {
       var user = new User({
         username: req.body.username,
@@ -133,9 +154,9 @@ app.post('/signup', function(req, res) {
         res.status(201).redirect('/');
       });
     }
-  })
+  });
 
-})
+});
 
 
 /************************************************************/
