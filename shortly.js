@@ -30,6 +30,13 @@ app.use(session({
   saveUninitialized: true,
 }));
 
+app.use(function(req, res, next) {
+  if(!req.session.authenticated) {
+    req.session.authenticated = false;
+  }
+  next();
+});
+
 
 // app.get
 //   check for login
@@ -115,6 +122,7 @@ app.post('/login', function(req, res) {
 
   .then(function(user){
     if (user) {
+      req.session.authenticated = true;
       res.status(201).redirect('/');
     } else {
       res.status(201).redirect('/login');
@@ -124,7 +132,7 @@ app.post('/login', function(req, res) {
 
 app.get('/signup', function(req,res){
   res.render('signup');
-})
+});
 app.post('/signup', function(req, res) {
 // create temporary model
 // use fetch to check server
@@ -157,6 +165,11 @@ app.post('/signup', function(req, res) {
   });
 
 });
+
+app.get('/logout', function(req,res){
+  req.session.destroy();
+  res.render('login');
+})
 
 
 /************************************************************/

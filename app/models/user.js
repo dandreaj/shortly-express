@@ -13,7 +13,6 @@ var User = db.Model.extend({
         if(err) {
           console.log(err);
         } else {
-          console.log('hash: ', hash);
           model.set('password', hash);
         }
       });
